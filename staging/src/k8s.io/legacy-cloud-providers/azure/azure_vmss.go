@@ -666,11 +666,13 @@ func (ss *scaleSet) getNodeIdentityByNodeName(nodeName string, crt azcache.Azure
 		return node, nil
 	}
 
-	if _, err := getScaleSetVMInstanceID(nodeName); err != nil {
+	vmName := ss.Cloud.mapNodeNameToVMName(types.NodeName(nodeName))
+
+	if _, err := getScaleSetVMInstanceID(vmName); err != nil {
 		return nil, err
 	}
 
-	node, err := getter(nodeName, crt)
+	node, err := getter(vmName, crt)
 	if err != nil {
 		return nil, err
 	}
@@ -679,7 +681,7 @@ func (ss *scaleSet) getNodeIdentityByNodeName(nodeName string, crt azcache.Azure
 	}
 
 	klog.V(2).Infof("Couldn't find VMSS for node %s, refreshing the cache", nodeName)
-	node, err = getter(nodeName, azcache.CacheReadTypeForceRefresh)
+	node, err = getter(vmName, azcache.CacheReadTypeForceRefresh)
 	if err != nil {
 		return nil, err
 	}
@@ -932,7 +934,7 @@ func (ss *scaleSet) getConfigForScaleSetByIPFamily(config *compute.VirtualMachin
 // participating in the specified LoadBalancer Backend Pool, which returns (resourceGroup, vmssName, instanceID, vmssVM, error).
 func (ss *scaleSet) EnsureHostInPool(service *v1.Service, nodeName types.NodeName, backendPoolID string, vmSetName string, isInternal bool) (string, string, string, *compute.VirtualMachineScaleSetVM, error) {
 	klog.V(3).Infof("ensuring node %q of scaleset %q in LB backendpool %q", nodeName, vmSetName, backendPoolID)
-	vmName := mapNodeNameToVMName(nodeName)
+	vmName := ss.Cloud.mapNodeNameToVMName(nodeName)
 	ssName, instanceID, vm, err := ss.getVmssVM(vmName, azcache.CacheReadTypeDefault)
 	if err != nil {
 		return "", "", "", nil, err
