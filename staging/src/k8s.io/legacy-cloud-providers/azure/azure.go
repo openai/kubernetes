@@ -277,6 +277,8 @@ type Cloud struct {
 	// nodeZones is a mapping from Zone to a sets.String of Node's names in the Zone
 	// it is updated by the nodeInformer
 	nodeZones map[string]sets.String
+	// nodeProvidersIDs maps kube node name to its Azure ProviderID
+	nodeProviderIDs map[string]string
 	// nodeResourceGroups holds nodes external resource groups
 	nodeResourceGroups map[string]string
 	// unmanagedNodes holds a list of nodes not managed by Azure cloud provider.
@@ -343,6 +345,7 @@ func NewCloudWithoutFeatureGates(configReader io.Reader) (*Cloud, error) {
 
 	az := &Cloud{
 		nodeZones:          map[string]sets.String{},
+		nodeProviderIDs:    map[string]string{},
 		nodeResourceGroups: map[string]string{},
 		unmanagedNodes:     sets.NewString(),
 		routeCIDRs:         map[string]string{},
@@ -791,6 +794,11 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 			}
 		}
 
+		// Remove from nodeProviderIDs cache.
+		if len(prevNode.Spec.ProviderID) != 0 {
+			delete(az.nodeProviderIDs, prevNode.ObjectMeta.Name)
+		}
+
 		// Remove from nodeResourceGroups cache.
 		_, ok = prevNode.ObjectMeta.Labels[externalResourceGroupLabel]
 		if ok {
@@ -812,6 +820,11 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 				az.nodeZones[newZone] = sets.NewString()
 			}
 			az.nodeZones[newZone].Insert(newNode.ObjectMeta.Name)
+		}
+
+		// Add to nodeProviderIDs cache.
+		if len(newNode.Spec.ProviderID) != 0 {
+			az.nodeProviderIDs[newNode.ObjectMeta.Name] = newNode.Spec.ProviderID
 		}
 
 		// Add to nodeResourceGroups cache.
