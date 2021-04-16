@@ -241,7 +241,7 @@ func (az *Cloud) InstanceShutdownByProviderID(ctx context.Context, providerID st
 
 func (az *Cloud) isCurrentInstance(name types.NodeName, metadataVMName string) (bool, error) {
 	var err error
-	nodeName := mapNodeNameToVMName(name)
+	nodeName := az.mapNodeNameToVMName(name)
 
 	// VMSS vmName is not same with hostname, use hostname instead.
 	if az.VMType == vmTypeVMSS {
@@ -264,7 +264,7 @@ func (az *Cloud) isCurrentInstance(name types.NodeName, metadataVMName string) (
 // InstanceID returns the cloud provider ID of the specified instance.
 // Note that if the instance does not exist or is no longer running, we must return ("", cloudprovider.InstanceNotFound)
 func (az *Cloud) InstanceID(ctx context.Context, name types.NodeName) (string, error) {
-	nodeName := mapNodeNameToVMName(name)
+	nodeName := az.mapNodeNameToVMName(name)
 	unmanaged, err := az.IsNodeUnmanaged(nodeName)
 	if err != nil {
 		return "", err
@@ -408,8 +408,15 @@ func (az *Cloud) CurrentNodeName(ctx context.Context, hostname string) (types.No
 	return types.NodeName(hostname), nil
 }
 
-// mapNodeNameToVMName maps a k8s NodeName to an Azure VM Name
-// This is a simple string cast.
-func mapNodeNameToVMName(nodeName types.NodeName) string {
-	return string(nodeName)
+// mapNodeNameToVMName maps a k8s NodeName to an Azure VM Name using  providerID.
+func (az *Cloud) mapNodeNameToVMName(nodeName types.NodeName) string {
+	vmName := string(nodeName)
+	providerID, ok := az.nodeProviderIDs[vmName]
+	if ok {
+		if name, err := az.VMSet.GetNodeNameByProviderID(providerID); err == nil {
+			vmName = string(name)
+		}
+	}
+
+	return vmName
 }

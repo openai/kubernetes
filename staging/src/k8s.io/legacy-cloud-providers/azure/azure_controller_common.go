@@ -107,7 +107,7 @@ func (c *controllerCommon) getNodeVMSet(nodeName types.NodeName, crt azcache.Azu
 	}
 
 	// 3. If the node is managed by availability set, then return ss.availabilitySet.
-	managedByAS, err := ss.isNodeManagedByAvailabilitySet(mapNodeNameToVMName(nodeName), crt)
+	managedByAS, err := ss.isNodeManagedByAvailabilitySet(c.cloud.mapNodeNameToVMName(nodeName), crt)
 	if err != nil {
 		return nil, err
 	}
