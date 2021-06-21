@@ -961,7 +961,7 @@ func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backend
 			continue
 		}
 
-		vmName := mapNodeNameToVMName(types.NodeName(nodeName))
+		vmName := as.Cloud.mapNodeNameToVMName(types.NodeName(nodeName))
 		nic, vmasID, err := as.getPrimaryInterfaceWithVMSet(vmName, vmSetName)
 		if err != nil {
 			if err == errNotInVMSet {
