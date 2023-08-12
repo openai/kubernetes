@@ -33,7 +33,7 @@ import (
 // AttachDisk attaches a vhd to vm
 // the vhd must exist, can be identified by diskName, diskURI, and lun.
 func (ss *scaleSet) AttachDisk(isManagedDisk bool, diskName, diskURI string, nodeName types.NodeName, lun int32, cachingMode compute.CachingTypes, diskEncryptionSetID string, writeAcceleratorEnabled bool) error {
-	vmName := mapNodeNameToVMName(nodeName)
+	vmName := ss.Cloud.mapNodeNameToVMName(nodeName)
 	ssName, instanceID, vm, err := ss.getVmssVM(vmName, azcache.CacheReadTypeDefault)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (ss *scaleSet) AttachDisk(isManagedDisk bool, diskName, diskURI string, nod
 // DetachDisk detaches a disk from host
 // the vhd can be identified by diskName or diskURI
 func (ss *scaleSet) DetachDisk(diskName, diskURI string, nodeName types.NodeName) error {
-	vmName := mapNodeNameToVMName(nodeName)
+	vmName := ss.Cloud.mapNodeNameToVMName(nodeName)
 	ssName, instanceID, vm, err := ss.getVmssVM(vmName, azcache.CacheReadTypeDefault)
 	if err != nil {
 		return err
