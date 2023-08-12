@@ -38,7 +38,7 @@ func (as *availabilitySet) AttachDisk(isManagedDisk bool, diskName, diskURI stri
 		return err
 	}
 
-	vmName := mapNodeNameToVMName(nodeName)
+	vmName := as.Cloud.mapNodeNameToVMName(nodeName)
 	nodeResourceGroup, err := as.GetNodeResourceGroup(vmName)
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func (as *availabilitySet) DetachDisk(diskName, diskURI string, nodeName types.N
 		return nil
 	}
 
-	vmName := mapNodeNameToVMName(nodeName)
+	vmName := as.Cloud.mapNodeNameToVMName(nodeName)
 	nodeResourceGroup, err := as.GetNodeResourceGroup(vmName)
 	if err != nil {
 		return err
