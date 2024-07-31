@@ -425,6 +425,9 @@ func (az *Cloud) CurrentNodeName(ctx context.Context, hostname string) (types.No
 
 // mapNodeNameToVMName maps a k8s NodeName to an Azure VM Name using  providerID.
 func (az *Cloud) mapNodeNameToVMName(nodeName types.NodeName) string {
+	az.nodeCachesLock.RLock()
+	defer az.nodeCachesLock.RUnlock()
+
 	vmName := string(nodeName)
 	providerID, ok := az.nodeProviderIDs[vmName]
 	if ok {
