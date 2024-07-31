@@ -55,3 +55,4 @@ ADD rsyncd.password /
 RUN chmod a+r /rsyncd.password
 ADD rsyncd.sh /
 RUN chmod a+rx /rsyncd.sh
+RUN apt update && apt install -y gcc-x86-64-linux-gnu gcc-arm-linux-gnueabihf
